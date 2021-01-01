@@ -34,6 +34,6 @@ object Run {
     spark.read.format("json")
       .option("inferSchema", "true")
       .option("header", "false")
-      .load(paths.toList : _*)
+      .load("s3a://openaq-fetches/test-realtime/2017-09-28")
   }
 }
