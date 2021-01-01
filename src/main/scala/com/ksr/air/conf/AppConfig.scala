@@ -9,8 +9,8 @@ case class AppConfig(awsKey: String,
                      awsBucket: String,
                      tempGCSBucket: String,
                      bigQueryTableName: String,
-                     startYear: Int,
-                     endYear: Int)
+                     startDate: String,
+                     endDate: String)
 
 object AppConfig {
   def apply(args: Array[String]): AppConfig = {
@@ -25,7 +25,7 @@ object AppConfig {
       conf.getString("AWS_BUCKET"),
       conf.getString("GCS_TEMPORARY_BUCKET"),
       conf.getString("BIGQUERY_TABLE_NAME"),
-      conf.getInt("startYear"),
-      conf.getInt("endYear"))
+      conf.getString("startDate"),
+      conf.getString("endDate"))
   }
 }
