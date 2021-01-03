@@ -1,7 +1,8 @@
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable.ListBuffer
 
@@ -22,7 +23,7 @@ object Run {
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig) = {
     var start: LocalDate = LocalDate.parse(startDate)
     val end: LocalDate = LocalDate.parse(endDate)
-    val paths = ListBuffer("")
+    val paths =  new ListBuffer[String]
     while (start.isBefore(end) || start.isEqual(end)) {
       paths += s"${appConf.awsBucket}/${start.toString}"
       start = start.plusMonths(1)
@@ -31,9 +32,14 @@ object Run {
       println("path is " + p)
     }
 
-    spark.read.format("json")
+    val data: DataFrame = spark.read.format("json")
       .option("inferSchema", "true")
       .option("header", "false")
-      .load("s3a://openaq-fetches/test-realtime/2017-09-28")
+      .load(paths.toList : _*)
+    import org.apache.spark.sql.functions.to_date
+
+    val out = data.withColumn("date", to_date(col("date.utc"))).repartition(col("date"))
+    println(out.count())
+    out.show(10)
   }
 }
