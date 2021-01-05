@@ -21,4 +21,9 @@ class RunTest extends AnyFlatSpec {
     readOpenAQData(appConf.startDate, appConf.endDate)
   }
 
+  it should "do something" in {
+    spark.sql("""select date_format(date '2017-09-28T10:00:00+10:00', "M") """).show();
+
+  }
+
 }
