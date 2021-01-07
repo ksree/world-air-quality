@@ -13,8 +13,6 @@ class RunTest extends AnyFlatSpec {
     .builder()
     .appName("WORLD_AIR_QUALITY")
     .config("spark.master", "local")
-    .config("spark.hadoop.fs.s3a.access.key", appConf.awsKey)
-    .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     .getOrCreate();
 
