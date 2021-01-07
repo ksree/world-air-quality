@@ -2,7 +2,7 @@ import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
 import org.apache.spark.sql.functions.{col, date_format}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 import scala.collection.mutable.ListBuffer
 
@@ -11,53 +11,56 @@ object Run {
 
     implicit val appConf: AppConfig = AppConfig.apply(args)
 
-    implicit val spark = SparkSession
+    implicit val spark: SparkSession = SparkSession
       .builder()
       .appName("World-Air-Quality")
       .config("spark.hadoop.fs.s3a.access.key", appConf.awsKey)
       .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
       .getOrCreate();
-    readOpenAQData(appConf.startDate, appConf.endDate)
+    val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
+
+    val pm25DailyAverage = spark.sql(
+      """SELECT city, date, avg(value) AS monthly_pm25_average ,count(*) AS measurement_count
+        |FROM openaq
+        |WHERE  parameter="pm25" AND value > 0 AND value != 985
+        |GROUP BY city, date
+        |ORDER BY monthly_pm25_average DESC """.stripMargin)
+
+    writeToBigQuery(pm25DailyAverage, "PM25DailyAverage")
   }
 
-  def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig) = {
+  def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
     var start: LocalDate = LocalDate.parse(startDate)
     val end: LocalDate = LocalDate.parse(endDate)
     val paths = new ListBuffer[String]
     while (start.isBefore(end) || start.isEqual(end)) {
-      paths += s"${appConf.awsBucket}/${start.toString}/1506614129.ndjson"
+      paths += s"${appConf.awsBucket}/${start.toString}"
       start = start.plusMonths(1)
     }
 
-    val load: DataFrame = spark.read.format("json")
+    val openAQData: DataFrame = spark.read.format("json")
       .option("inferSchema", "true")
       .option("header", "false")
       .load(paths.toList: _*)
-
-    //Partition data based on date
-    val openAQData = load.withColumn("date", date_format(col("date.local"), "yyyy-MM-dd"))
+      .withColumn("local_date", date_format(col("date.local"), "yyyy-MM-dd"))
+      .withColumn("month", date_format(col("date.local"), "MMM"))
+      .withColumn("year", date_format(col("date.local"), "yyyy"))
       .repartition(col("date"))
 
-    openAQData.printSchema()
     openAQData.createOrReplaceTempView("openaq")
-    val selectDF = spark.sql("SELECT * FROM openaq LIMIT 10")
-    selectDF.show();
 
-    /*Number of distinct cities per country  */
-    val distinctCitiesDF = spark.sql("SELECT country, count(DISTINCT city) AS count FROM openaq GROUP BY country")
-    distinctCitiesDF.show();
+    openAQData
+  }
 
-    /*Number of readings per day */
-    val totalReadingsPerDayDF = spark.sql("SELECT date,  count(*) AS count FROM openaq GROUP BY date")
-    /*Number of readings for each city per day  */
-    totalReadingsPerDayDF.show(10)
-
-    val totalReadingsPerCityPerDayDF = spark.sql("SELECT  city, date , count(*) AS count FROM openaq GROUP BY city, date")
-    totalReadingsPerCityPerDayDF.show(10)
-
-    /*    val out = data.withColumn("date", to_date(col("date.utc"))).repartition(col("date"))
-    out.groupBy(col("city"))
-    println(out.count())
-    out.show(10)*/
+  def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
+    out.write
+      .format("bigquery")
+      .mode(SaveMode.Append)
+      .option("temporaryGcsBucket", appConf.tempGCSBucket)
+      .option("partitionField", "local_date")
+      .option("partitionType", "DAY")
+      .option("clusteredFields", "country")
+      .option("allowFieldAddition", "true")  //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
+      .save(tableName)
   }
 }
