@@ -2,8 +2,10 @@ import Run.readOpenAQData
 import com.ksr.air.conf.AppConfig
 import org.apache.spark.sql.functions.{col, date_format, month, year}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.scalatest.Ignore
 import org.scalatest.flatspec.AnyFlatSpec
 
+@Ignore
 class RunTest extends AnyFlatSpec {
 
   implicit val appConf: AppConfig = AppConfig.apply(Array.empty[String])

@@ -4,3 +4,17 @@
 
 
 A project to read and aggregate world air quality data
+############# export GCS_TEMPORARY_BUCKET="${PROJECT_ID}-temp-bucket"
+export GCS_TEMPORARY_BUCKET="openaq-ksr-temp"
+export STORAGE_CLASS=standard
+export GCP_REGION=us-east1
+
+gsutil mb -c $STORAGE_CLASS  gs://$GCS_TEMPORARY_BUCKET
+
+bq mk PM25DailyAverage
+
+bq --location=$LOCATION mk \ 
+	--dataset \
+	--description 'NOAA gsod weather data' \
+	"${PROJECT_ID}:GlobalHistoricalWeatherData"
+	

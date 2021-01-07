@@ -14,10 +14,10 @@ object Run {
     implicit val spark: SparkSession = SparkSession
       .builder()
       .appName("World-Air-Quality")
-      .config("spark.hadoop.fs.s3a.access.key", appConf.awsKey)
-      .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
       .getOrCreate();
     val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
+
+    openAQDF.createOrReplaceTempView("openaq")
 
     val pm25DailyAverage = spark.sql(
       """SELECT city, date, avg(value) AS monthly_pm25_average ,count(*) AS measurement_count
@@ -60,7 +60,7 @@ object Run {
       .option("partitionField", "local_date")
       .option("partitionType", "DAY")
       .option("clusteredFields", "country")
-      .option("allowFieldAddition", "true")  //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
+      .option("allowFieldAddition", "true") //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
       .save(tableName)
   }
 }
