@@ -1,3 +1,5 @@
+package com.ksr.air
+
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
