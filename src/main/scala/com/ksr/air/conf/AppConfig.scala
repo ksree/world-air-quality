@@ -4,7 +4,9 @@ import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-case class AppConfig(awsBucket: String,
+case class AppConfig(awsKey: String,
+                     awsSecret: String,
+                     awsBucket: String,
                      tempGCSBucket: String,
                      bigQueryTableName: String,
                      startDate: String,
@@ -18,7 +20,9 @@ object AppConfig {
       else
         ConfigFactory.parseFile(new File(args(0).trim))
 
-    AppConfig(conf.getString("AWS_BUCKET"),
+    AppConfig(conf.getString("AWS_ACCESS_KEY"),
+      conf.getString("AWS_SECRET_KEY"),
+      conf.getString("AWS_BUCKET"),
       conf.getString("GCS_TEMPORARY_BUCKET"),
       conf.getString("BIGQUERY_TABLE_NAME"),
       conf.getString("startDate"),

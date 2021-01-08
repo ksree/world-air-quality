@@ -11,9 +11,10 @@ class RunTest extends AnyFlatSpec {
   implicit val appConf: AppConfig = AppConfig.apply(Array.empty[String])
   implicit val spark: SparkSession = SparkSession
     .builder()
-    .appName("WORLD_AIR_QUALITY")
     .config("spark.master", "local")
-    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    .appName("World-Air-Quality")
+    .config("spark.hadoop.fs.s3a.access.key", appConf.awsKey)
+    .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
     .getOrCreate();
 
   val testSource = s"${appConf.awsBucket}/${appConf.startDate}/1506614129.ndjson"

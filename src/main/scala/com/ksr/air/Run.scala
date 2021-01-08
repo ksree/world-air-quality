@@ -16,7 +16,10 @@ object Run {
     implicit val spark: SparkSession = SparkSession
       .builder()
       .appName("World-Air-Quality")
+      .config("spark.hadoop.fs.s3a.access.key", appConf.awsKey)
+      .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
       .getOrCreate();
+
     val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
 
     openAQDF.createOrReplaceTempView("openaq")
