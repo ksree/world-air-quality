@@ -11,7 +11,9 @@ export GCP_REGION=us-east1
 
 # Begin script in case all parameters are correct
 echo 'Setting up JAVA8'
-sudo apt-get install -y openjdk-8-jre
+sudo apt-get install -y openjdk-8-jdk
+sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 cd $HOME/ghcn-daily-analysis/

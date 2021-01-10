@@ -11,7 +11,7 @@
     <properties>
         <scala.version>2.12</scala.version>
         <scala.minor.version>2.12.10</scala.minor.version>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
         <spark.version>3.1.0</spark.version>
         <scalatest.version>3.2.2</scalatest.version>
@@ -29,8 +29,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -101,7 +101,7 @@
         </dependency>
         <dependency>
             <groupId>com.google.cloud.spark</groupId>
-            <artifactId>spark-bigquery-with-dependencies_2.12</artifactId>
+            <artifactId>spark-bigquery-with-dependencies_${scala.version}</artifactId>
             <version>0.18.0</version>
             <scope>provided</scope>
         </dependency>
