@@ -22,16 +22,16 @@ object Run {
 
     val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
 
-    openAQDF.createOrReplaceTempView("openaq")
+/*    openAQDF.createOrReplaceTempView("openaq")
 
     val pm25DailyAverage = spark.sql(
       """SELECT country, city, local_date, avg(value) AS pm25_daily_average ,count(*) AS measurement_count
         |FROM openaq
         |WHERE  parameter="pm25" AND value > 0 AND value != 985
         |GROUP BY country, city, local_date
-        |ORDER BY pm25_daily_average DESC """.stripMargin)
+        |ORDER BY pm25_daily_average DESC """.stripMargin)*/
 
-    writeToBigQuery(pm25DailyAverage, appConf.bigQueryTableName)
+    writeToBigQuery(openAQDF, appConf.bigQueryTableName)
   }
 
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
