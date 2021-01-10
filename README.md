@@ -32,7 +32,7 @@ bq --location=$LOCATION mk \
 export LOCATION=us-central1
 
 gcloud dataproc jobs submit spark \
---cluster=cluster-54db  \
+--cluster=cluster-68db  \
 --region=$LOCATION \
 --class=com.ksr.air.Run \
---jars=/home/kapilsreed12/world-air-quality/target/world-air-quality-1.0-SNAPSHOT.jar,gs://spark-lib/bigquery/spark-bigquery-latest.jar 
+--jars=/home/kapilsreed12/world-air-quality/target/world-air-quality-1.0-SNAPSHOT.jar,gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar 

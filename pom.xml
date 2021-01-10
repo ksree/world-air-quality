@@ -101,8 +101,9 @@
         </dependency>
         <dependency>
             <groupId>com.google.cloud.spark</groupId>
-            <artifactId>spark-bigquery-with-dependencies_${scala.version}</artifactId>
-            <version>${spark.bigquery.version}</version>
+            <artifactId>spark-bigquery-with-dependencies_2.12</artifactId>
+            <version>0.18.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.cloud.bigdataoss</groupId>
