@@ -31,7 +31,7 @@ object Run {
         |GROUP BY city, date
         |ORDER BY monthly_pm25_average DESC """.stripMargin)
 
-    writeToBigQuery(pm25DailyAverage, "PM25DailyAverage")
+    writeToBigQuery(pm25DailyAverage, appConf.bigQueryTableName)
   }
 
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
