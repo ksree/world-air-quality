@@ -13,11 +13,11 @@
         <scala.minor.version>2.12.10</scala.minor.version>
         <java.version>1.8</java.version>
         <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
-        <spark.version>3.0.1</spark.version>
+        <spark.version>3.1.0</spark.version>
         <scalatest.version>3.2.2</scalatest.version>
         <log4j.version>1.2.17</log4j.version>
         <scala.maven.plugin.version>4.4.0</scala.maven.plugin.version>
-        <spark.bigquery.version>0.17.2</spark.bigquery.version>
+        <spark.bigquery.version>0.18.0</spark.bigquery.version>
         <gcs.hadoop.version>hadoop3-2.1.4</gcs.hadoop.version>
         <maven.shade.version>3.2.1</maven.shade.version>
         <config.version>1.4.0</config.version>
@@ -102,7 +102,7 @@
         <dependency>
             <groupId>com.google.cloud.spark</groupId>
             <artifactId>spark-bigquery-with-dependencies_${scala.version}</artifactId>
-            <version>0.17.2</version>
+            <version>${spark.bigquery.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud.bigdataoss</groupId>
