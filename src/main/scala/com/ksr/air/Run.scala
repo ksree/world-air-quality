@@ -50,7 +50,7 @@ object Run {
       .withColumn("local_date", date_format(col("date.local"), "yyyy-MM-dd"))
       .withColumn("month", date_format(col("date.local"), "MMM"))
       .withColumn("year", date_format(col("date.local"), "yyyy"))
-      .repartition(col("date"))
+      .repartition(col("local_date"))
 
     openAQData.createOrReplaceTempView("openaq")
 

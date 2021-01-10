@@ -18,24 +18,21 @@ export GCP_REGION=us-east1
 
 gsutil mb -c $STORAGE_CLASS  gs://$GCS_TEMPORARY_BUCKET
 
-bq --location=$GCP_REGION mk --dataset --description 'Open Air Quality ' "${PROJECT_ID}:OpenAirAQ"
+bq --location=$GCP_REGION mk \
+--dataset \
+--description 'Open Air Quality' \
+ "${PROJECT_ID}:OpenAirAQ"
 ```
 
-
-
-
-
-
-
-
-
-	
-
+##Execute Dataproc job 
+```
 export GCP_REGION=us-east1
 
 gcloud dataproc jobs submit spark \
---cluster=cluster-8d6e  \
+--cluster=cluster-0064  \
 --region=$GCP_REGION \
 --class=com.ksr.air.Run \
+--files=/home/kapilsreed12/world-air-quality/src/main/resources/application.conf \
 --jars=/home/kapilsreed12/world-air-quality/target/world-air-quality-1.0-SNAPSHOT.jar,gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar \
--- /home/kapilsreed12/world-air-quality/src/main/resources/application.conf
+-- application.conf
+```
