@@ -26,7 +26,7 @@ class RunTest extends AnyFlatSpec {
     .withColumn("local_date", date_format(col("date.local"), "yyyy-MM-dd"))
     .withColumn("month", month(col("date.local")))
     .withColumn("year", year(col("date.local")))
-    .repartition(col("date"))
+    .repartition(col("local_date"))
 
   openAQData.createOrReplaceTempView("openaq")
 

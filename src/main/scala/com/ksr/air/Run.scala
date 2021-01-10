@@ -25,11 +25,11 @@ object Run {
     openAQDF.createOrReplaceTempView("openaq")
 
     val pm25DailyAverage = spark.sql(
-      """SELECT city, date, avg(value) AS monthly_pm25_average ,count(*) AS measurement_count
+      """SELECT city, local_date as date, avg(value) AS pm25_daily_average ,count(*) AS measurement_count
         |FROM openaq
         |WHERE  parameter="pm25" AND value > 0 AND value != 985
-        |GROUP BY city, date
-        |ORDER BY monthly_pm25_average DESC """.stripMargin)
+        |GROUP BY city, local_date
+        |ORDER BY pm25_daily_average DESC """.stripMargin)
 
     writeToBigQuery(pm25DailyAverage, appConf.bigQueryTableName)
   }
