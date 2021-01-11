@@ -3,7 +3,7 @@ package com.ksr.air
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
-import org.apache.spark.sql.functions.{col, date_format}
+import org.apache.spark.sql.functions.{col, date_format, to_date}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 import scala.collection.mutable.ListBuffer
@@ -47,7 +47,7 @@ object Run {
       .option("inferSchema", "true")
       .option("header", "false")
       .load(paths.toList: _*)
-      .withColumn("local_date", date_format(col("date.local"), "yyyy-MM-dd"))
+      .withColumn("local_date", to_date(col("date.local"), "yyyy-MM-dd"))
       .withColumn("month", date_format(col("date.local"), "MMM"))
       .withColumn("year", date_format(col("date.local"), "yyyy"))
       .repartition(col("local_date"))
