@@ -34,13 +34,13 @@ object Run {
       " sourceType," +
       " unit," +
       " month," +
-      " COUNT(value) OVER(PARTITION BY city, month, year ) as monthly_reading_count ," +
+      " COUNT(value) OVER(PARTITION BY city, month, year ) as monthly_reading_count," +
       " AVG(value) OVER(PARTITION BY city, month, year ) as monthly_avg," +
       " year," +
-      " COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count ," +
-      " AVG(value) OVER(PARTITION BY city, year ) as yearly_avg" +
+      " COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count," +
+      " AVG(value) OVER(PARTITION BY city, year ) as yearly_avg," +
       " local_date" +
-      "  FROM openaq ")
+      " FROM openaq ")
 
     writeToBigQuery(openAveragesAQDF, appConf.bigQueryTableName)
   }
