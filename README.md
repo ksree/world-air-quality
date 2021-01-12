@@ -29,7 +29,7 @@ bq --location=$GCP_REGION mk \
 export GCP_REGION=us-east1
 
 gcloud dataproc jobs submit spark \
---cluster=cluster-0064  \
+--cluster=cluster-231e  \
 --region=$GCP_REGION \
 --class=com.ksr.air.Run \
 --files=/home/kapilsreed12/application.conf \

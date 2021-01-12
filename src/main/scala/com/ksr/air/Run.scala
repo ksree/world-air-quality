@@ -4,6 +4,7 @@ import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
 import org.apache.spark.sql.functions.{col, month, to_date, year}
+import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 import scala.collection.mutable.ListBuffer
@@ -16,22 +17,31 @@ object Run {
     implicit val spark: SparkSession = SparkSession
       .builder()
       .appName("World-Air-Quality")
-      .config("spark.master", "local")
       .config("spark.hadoop.fs.s3a.access.key", appConf.awsKey)
       .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
       .getOrCreate();
 
     val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
-/*    openAQDF.createOrReplaceTempView("openaq")
+    openAQDF.createOrReplaceTempView("openaq")
 
-    val pm25DailyAverage = spark.sql(
-      """SELECT country, city, local_date, avg(value) AS pm25_daily_average ,count(*) AS measurement_count
-        |FROM openaq
-        |WHERE  parameter="pm25" AND value > 0 AND value != 985
-        |GROUP BY country, city, local_date
-        |ORDER BY pm25_daily_average DESC """.stripMargin)*/
+    val openAveragesAQDF = spark.sql("SELECT city," +
+      " parameter," +
+      " value," +
+      " coordinates.latitude," +
+      " coordinates.longitude," +
+      " country," +
+      " sourceName," +
+      " sourceType," +
+      " unit," +
+      " month," +
+      " COUNT(value) OVER(PARTITION BY city, month, year ) as monthly_reading_count ," +
+      " AVG(value) OVER(PARTITION BY city, month, year ) as monthly_avg," +
+      " year," +
+      " COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count ," +
+      " AVG(value) OVER(PARTITION BY city, year ) as yearly_avg" +
+      "  FROM openaq ")
 
-    writeToBigQuery(openAQDF, appConf.bigQueryTableName)
+    writeToBigQuery(openAveragesAQDF, appConf.bigQueryTableName)
   }
 
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
@@ -50,7 +60,9 @@ object Run {
       .withColumn("local_date", to_date(col("date.local")))
       .withColumn("month", month(col("date.local")))
       .withColumn("year", year(col("date.local")))
-      .repartition(col("local_date"))
+      .withColumn("valueTmp", col("value").cast(IntegerType))
+      .drop("value").withColumnRenamed("valueTmp", "value")
+      .filter(col("value") > 0 && col("value") != 985 && col("parameter").contains("pm25"))
 
     openAQData.createOrReplaceTempView("openaq")
 
