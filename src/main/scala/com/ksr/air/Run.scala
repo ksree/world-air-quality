@@ -39,6 +39,7 @@ object Run {
       " year," +
       " COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count ," +
       " AVG(value) OVER(PARTITION BY city, year ) as yearly_avg" +
+      " local_date" +
       "  FROM openaq ")
 
     writeToBigQuery(openAveragesAQDF, appConf.bigQueryTableName)
