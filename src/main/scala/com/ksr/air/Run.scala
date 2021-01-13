@@ -25,26 +25,38 @@ object Run {
     openAQDF.createOrReplaceTempView("openaq")
 
     val openAveragesAQDF = spark.sql("SELECT * FROM (" +
-        " SELECT city," +
-        " parameter," +
-        " coordinates.latitude," +
-        " coordinates.longitude," +
-        " country," +
-        " sourceName," +
-        " sourceType," +
-        " unit," +
-        " month," +
-        " ROW_NUMBER() OVER(PARTITION BY city, month, year ORDER BY month, year) as row_number, " +
-        " COUNT(value) OVER(PARTITION BY city, month, year ) as monthly_reading_count," +
-        " AVG(value) OVER(PARTITION BY city, month, year ) as monthly_avg," +
-        " year," +
-        " COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count," +
-        " AVG(value) OVER(PARTITION BY city, year ) as yearly_avg," +
-        " value as daily_value," +
-        " local_date" +
-        " FROM openaq )" +
-      " WHERE row_number = 1")
+      "SELECT * FROM (" +
+      "   SELECT city," +
+      "     parameter," +
+      "     coordinates.latitude," +
+      "     coordinates.longitude," +
+      "     country," +
+      "     sourceName," +
+      "     sourceType," +
+      "     unit," +
+      "     month," +
+      "     ROW_NUMBER() OVER(PARTITION BY city, month, year ORDER BY month, year) as row_number, " +
+      "     COUNT(value) OVER(PARTITION BY city, month, year ) as monthly_reading_count," +
+      "     AVG(value) OVER(PARTITION BY city, month, year ) as monthly_avg," +
+      "     year," +
+      "     COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count," +
+      "     AVG(value) OVER(PARTITION BY city, year ) as yearly_avg," +
+      "     value as daily_value," +
+      "     local_date" +
+      "     FROM openaq " +
+      "   )" +
+      " WHERE row_number = 1 " +
+      " )" +
+      " PIVOT (" +
+      "  CAST(avg(monthly_avg) AS DECIMAL(4, 2))" +
+      "  FOR month in (" +
+      "    1 JAN, 2 FEB, 3 MAR, 4 APR, 5 MAY, 6 JUN," +
+      "    7 JUL, 8 AUG, 9 SEP, 10 OCT, 11 NOV, 12 DEC" +
+      "   )" +
+      " )"
+    )
 
+    openAveragesAQDF
     writeToBigQuery(openAveragesAQDF, appConf.bigQueryTableName)
   }
 
