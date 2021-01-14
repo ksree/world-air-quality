@@ -3,7 +3,7 @@ package com.ksr.air
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
-import org.apache.spark.sql.functions.{avg, col, month, to_date, year}
+import org.apache.spark.sql.functions.{avg, col, concat, lit, lpad, month, to_date, year}
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
@@ -93,7 +93,8 @@ object Run {
   }
 
   def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
-    out.write
+    val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"), lpad(col("month"), 2, "0"), lit("-01")), "yyyy-mm-dd"))
+    pOut.write
       .format("bigquery")
       .mode(SaveMode.Append)
       .option("temporaryGcsBucket", appConf.tempGCSBucket)
