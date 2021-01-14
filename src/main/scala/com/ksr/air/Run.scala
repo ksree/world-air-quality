@@ -58,7 +58,8 @@ object Run {
       ")" +
       "WHERE row_no = 1"
     )
-    val aggregatedData = yearlyAvg.join(monthlyAvgPivotted, "city").orderBy(yearlyAvg.col("year"), yearlyAvg.col("yearly_avg"))
+    import org.apache.spark.sql.functions._
+    val aggregatedData = yearlyAvg.join(monthlyAvgPivotted, Seq("city", "year")).orderBy(desc("year"), desc("yearly_avg"))
 
     //Transform End
 
