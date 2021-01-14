@@ -97,8 +97,7 @@ object Run {
       .format("bigquery")
       .mode(SaveMode.Append)
       .option("temporaryGcsBucket", appConf.tempGCSBucket)
-      .option("partitionField", "local_date")
-      .option("partitionType", "DAY")
+      .option("partitionField", "year")
       .option("clusteredFields", "country")
       .option("allowFieldAddition", "true") //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
       .save(tableName)
