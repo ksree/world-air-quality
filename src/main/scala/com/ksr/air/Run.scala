@@ -3,7 +3,7 @@ package com.ksr.air
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
-import org.apache.spark.sql.functions.{col, month, to_date, year}
+import org.apache.spark.sql.functions.{avg, col, month, to_date, year}
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
@@ -22,42 +22,48 @@ object Run {
       .getOrCreate();
 
     val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
-    openAQDF.createOrReplaceTempView("openaq")
 
-    val openAveragesAQDF = spark.sql("SELECT * FROM (" +
-      "SELECT * FROM (" +
-      "   SELECT city," +
-      "     parameter," +
-      "     coordinates.latitude," +
-      "     coordinates.longitude," +
-      "     country," +
-      "     sourceName," +
-      "     sourceType," +
-      "     unit," +
-      "     month," +
-      "     ROW_NUMBER() OVER(PARTITION BY city, month, year ORDER BY month, year) as row_number, " +
-      "     COUNT(value) OVER(PARTITION BY city, month, year ) as monthly_reading_count," +
-      "     AVG(value) OVER(PARTITION BY city, month, year ) as monthly_avg," +
-      "     year," +
-      "     COUNT(value) OVER(PARTITION BY city, year ) as yearly_reading_count," +
-      "     AVG(value) OVER(PARTITION BY city, year ) as yearly_avg," +
-      "     value as daily_value," +
-      "     local_date" +
-      "     FROM openaq " +
-      "   )" +
-      " WHERE row_number = 1 " +
-      " )" +
-      " PIVOT (" +
+    //Transform Start
+    val monthlyAvg = openAQDF
+      .groupBy(col("year"), col("month"), col("city"))
+      .agg(avg(col("value")) as "monthly_avg")
+
+    monthlyAvg.createOrReplaceTempView("monthlyAvg")
+
+    val monthlyAvgPivotted = spark.sql("SELECT * FROM  monthlyAvg " +
+      "PIVOT (" +
       "  CAST(avg(monthly_avg) AS DECIMAL(4, 2))" +
       "  FOR month in (" +
       "    1 JAN, 2 FEB, 3 MAR, 4 APR, 5 MAY, 6 JUN," +
       "    7 JUL, 8 AUG, 9 SEP, 10 OCT, 11 NOV, 12 DEC" +
       "   )" +
-      " )"
+      ")"
     )
 
-    openAveragesAQDF
-    writeToBigQuery(openAveragesAQDF, appConf.bigQueryTableName)
+    val yearlyAvg = spark.sql("SELECT * FROM (" +
+      "SELECT " +
+      "city, " +
+      "parameter, " +
+      "coordinates.latitude AS latitude ," +
+      "coordinates.longitude AS longitude, " +
+      "country," +
+      "sourceName, " +
+      "sourceType, " +
+      "unit, " +
+      "month, " +
+      "year, " +
+      "AVG(value) OVER(PARTITION BY city, year) AS yearly_avg, " +
+      "ROW_NUMBER() OVER(PARTITION BY city, month, year ORDER BY city, month, year) AS row_no " +
+      "FROM openaq " +
+      ")" +
+      "WHERE row_no = 1"
+    )
+    val aggregatedData = yearlyAvg.join(monthlyAvgPivotted, "city").orderBy(yearlyAvg.col("year"), yearlyAvg.col("yearly_avg"))
+
+    //Transform End
+
+
+    writeToBigQuery(aggregatedData, appConf.bigQueryTableName)
   }
 
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
