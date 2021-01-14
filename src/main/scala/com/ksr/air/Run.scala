@@ -81,7 +81,10 @@ object Run {
       paths += s"${appConf.awsBucket}/${start.toString}"
       start = start.plusMonths(1)
     }
-
+    for(path <- paths){
+      println(s"The path is $path")
+    }
+    
     val openAQData: DataFrame = spark.read.format("json")
       .option("inferSchema", "true")
       .option("header", "false")
