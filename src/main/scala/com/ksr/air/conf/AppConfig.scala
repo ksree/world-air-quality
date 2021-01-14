@@ -10,7 +10,8 @@ case class AppConfig(awsKey: String,
                      tempGCSBucket: String,
                      bigQueryTableName: String,
                      startDate: String,
-                     endDate: String)
+                     endDate: String,
+                     applyAggregations: Boolean = false)
 
 object AppConfig {
   def apply(args: Array[String]): AppConfig = {
@@ -26,6 +27,7 @@ object AppConfig {
       conf.getString("GCS_TEMPORARY_BUCKET"),
       conf.getString("BIGQUERY_TABLE_NAME"),
       conf.getString("startDate"),
-      conf.getString("endDate"))
+      conf.getString("endDate"),
+      conf.getBoolean("applyAggregations"))
   }
 }

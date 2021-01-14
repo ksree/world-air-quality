@@ -3,7 +3,7 @@ package com.ksr.air
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
-import org.apache.spark.sql.functions.{avg, col, concat, lit, lpad, month, to_date, year}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
@@ -23,6 +23,15 @@ object Run {
 
     val openAQDF: DataFrame = readOpenAQData(appConf.startDate, appConf.endDate)
 
+    val outDF: DataFrame = appConf.applyAggregations match {
+      case true => aggregateTransformations(openAQDF)
+      case false => openAQDF
+    }
+
+    writeToBigQuery(outDF, appConf.bigQueryTableName)
+  }
+
+  def aggregateTransformations(openAQDF: DataFrame)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
     //Transform Start
     val monthlyAvg = openAQDF
       .groupBy(col("year"), col("month"), col("city"))
@@ -61,10 +70,7 @@ object Run {
     import org.apache.spark.sql.functions._
     val aggregatedData = yearlyAvg.join(monthlyAvgPivotted, Seq("city", "year")).orderBy(desc("year"), desc("yearly_avg"))
 
-    //Transform End
-
-
-    writeToBigQuery(aggregatedData, appConf.bigQueryTableName)
+    aggregatedData
   }
 
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
