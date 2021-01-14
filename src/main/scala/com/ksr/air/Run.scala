@@ -84,7 +84,7 @@ object Run {
     for(path <- paths){
       println(s"The path is $path")
     }
-    
+
     val openAQData: DataFrame = spark.read.format("json")
       .option("inferSchema", "true")
       .option("header", "false")
@@ -102,7 +102,7 @@ object Run {
   }
 
   def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
-    val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"), lpad(col("month"), 2, "0"), lit("-01")), "yyyy-mm-dd"))
+    val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"), format_string("%02d",col("month")), lit("-01")), "yyyy-MM-dd"))
     pOut.write
       .format("bigquery")
       .mode(SaveMode.Append)
