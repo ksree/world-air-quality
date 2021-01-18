@@ -81,7 +81,7 @@ object Run {
       paths += s"${appConf.awsBucket}/${start.toString}"
       start = start.plusMonths(1)
     }
-    for(path <- paths){
+    for (path <- paths) {
       println(s"The path is $path")
     }
 
@@ -100,26 +100,31 @@ object Run {
       openAQData.createOrReplaceTempView("openaq")
       openAQData
     }
-      catch {
-        case ex: AnalysisException => {
-          println(" file missing exception")
-          spark.emptyDataFrame
-        }
-        case ex: Exception => ex.printStackTrace()
-          spark.emptyDataFrame
-
+    catch {
+      case ex: AnalysisException => {
+        println(" file missing exception")
+        spark.emptyDataFrame
       }
+      case ex: Exception => ex.printStackTrace()
+        spark.emptyDataFrame
+
+    }
   }
 
   def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
-    val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"), format_string("%02d",col("month")), lit("-01")), "yyyy-MM-dd"))
-    pOut.write
-      .format("bigquery")
-      .mode(SaveMode.Append)
-      .option("temporaryGcsBucket", appConf.tempGCSBucket)
-      .option("partitionField", "partitionDate")
-      .option("clusteredFields", "country")
-      .option("allowFieldAddition", "true") //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
-      .save(tableName)
+    out.isEmpty match {
+      case true =>  println("Empty Dataframe")
+      case false => {
+        val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"), format_string("%02d", col("month")), lit("-01")), "yyyy-MM-dd"))
+        pOut.write
+          .format("bigquery")
+          .mode(SaveMode.Append)
+          .option("temporaryGcsBucket", appConf.tempGCSBucket)
+          .option("partitionField", "partitionDate")
+          .option("clusteredFields", "country")
+          .option("allowFieldAddition", "true") //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
+          .save(tableName)
+      }
+
+    }
   }
-}
