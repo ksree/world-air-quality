@@ -113,7 +113,7 @@ object Run {
 
   def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
     out.isEmpty match {
-      case true =>  println("Empty Dataframe")
+      case true => println("Empty Dataframe")
       case false => {
         val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"), format_string("%02d", col("month")), lit("-01")), "yyyy-MM-dd"))
         pOut.write
@@ -128,3 +128,4 @@ object Run {
 
     }
   }
+}
