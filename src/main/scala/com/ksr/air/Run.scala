@@ -5,7 +5,7 @@ import java.time.LocalDate
 import com.ksr.air.conf.AppConfig
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.{AnalysisException, DataFrame, SaveMode, SparkSession}
 
 import scala.collection.mutable.ListBuffer
 
@@ -34,7 +34,7 @@ object Run {
   def aggregateTransformations(openAQDF: DataFrame)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
     //Transform Start
     val monthlyAvg = openAQDF
-      .groupBy(col("year"), col("month"), col("city"))
+      .groupBy(col("city"), col("month"), col("year"))
       .agg(avg(col("value")) as "monthly_avg")
 
     monthlyAvg.createOrReplaceTempView("monthlyAvg")
@@ -85,20 +85,30 @@ object Run {
       println(s"The path is $path")
     }
 
-    val openAQData: DataFrame = spark.read.format("json")
-      .option("inferSchema", "true")
-      .option("header", "false")
-      .load(paths.toList: _*)
-      .withColumn("local_date", to_date(col("date.local")))
-      .withColumn("month", month(col("date.local")))
-      .withColumn("year", year(col("date.local")))
-      .withColumn("valueTmp", col("value").cast(IntegerType))
-      .drop("value").withColumnRenamed("valueTmp", "value")
-      .filter(col("value") > 0 && col("value") != 985 && col("parameter").contains("pm25"))
+    try {
+      val openAQData: DataFrame = spark.read.format("json")
+        .option("inferSchema", "true")
+        .option("header", "false")
+        .load(paths.toList: _*)
+        .withColumn("local_date", to_date(col("date.local")))
+        .withColumn("month", month(col("date.local")))
+        .withColumn("year", year(col("date.local")))
+        .withColumn("valueTmp", col("value").cast(IntegerType))
+        .drop("value").withColumnRenamed("valueTmp", "value")
+        .filter(col("value") > 0 && col("value") != 985 && col("parameter").contains("pm25"))
 
-    openAQData.createOrReplaceTempView("openaq")
+      openAQData.createOrReplaceTempView("openaq")
+      openAQData
+    }
+      catch {
+        case ex: AnalysisException => {
+          println(" file missing exception")
+          spark.emptyDataFrame
+        }
+        case ex: Exception => ex.printStackTrace()
+          spark.emptyDataFrame
 
-    openAQData
+      }
   }
 
   def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
