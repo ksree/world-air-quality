@@ -46,7 +46,7 @@ class RunTest extends AnyFlatSpec {
     monthlyAvg.show()
     val monthly_avg_Albuquerque: List[java.math.BigDecimal] = monthlyAvg
       .select("Nov").filter(col("city") === "Albuquerque").collect.map(_.getDecimal(0)).toList
-      assert(monthly_avg_Albuquerque.head === new java.math.BigDecimal(3.87).setScale(2 , RoundingMode.DOWN))
+      assert(monthly_avg_Albuquerque.head.compareTo(new java.math.BigDecimal(3.87).setScale(2 , RoundingMode.DOWN)) === 0)
   }
   /*val openAveragesAQDF = spark.sql("SELECT * FROM (" +
     "   SELECT city," +
