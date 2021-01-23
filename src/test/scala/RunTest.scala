@@ -48,6 +48,16 @@ class RunTest extends AnyFlatSpec {
       .select("Nov").filter(col("city") === "Albuquerque").collect.map(_.getDecimal(0)).toList
       assert(monthly_avg_Albuquerque.head.compareTo(new java.math.BigDecimal(3.87).setScale(2 , RoundingMode.DOWN)) === 0)
   }
+
+  "Yearly Average" should "calculate yearly averages for each year for every city" in {
+    val yearlyAvg: DataFrame = com.ksr.air.Run.yearlyAvg(openAQData)
+    yearlyAvg.show()
+  }
+
+  "Aggregate transformations " should "calculate all aggregations in openair aq" in {
+    val aggregateOpenAirAQ: DataFrame = com.ksr.air.Run.aggregateTransformations(openAQData, 1)
+    aggregateOpenAirAQ.show()
+  }
   /*val openAveragesAQDF = spark.sql("SELECT * FROM (" +
     "   SELECT city," +
     "     parameter," +
