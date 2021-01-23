@@ -280,37 +280,18 @@ object ISOCountry extends Enum {
       case _             ⇒ throw new ParseException(s"Invalid alpha-2 code '$countryCode' for ISOCountry")
     }
 
+
   /**
-   * Retrieves Option[ISOCountry] based on alpha-2 code.
-   * https://www.iso.org/obp/ui/#search
+   * Retrieves Country name  based on alpha-2 code.
    *
    * @param countryCode Country code, ie. US, CN
-   * @return Option[ISOCountry]
+   * @return String. Returns String Country english name if code found else returns String  InvalidCountryCode
    */
-  def from(countryCode: String): Option[ISOCountry] =
-    ISOCountry.values.find(countryCode == _.toString)
-
-  /**
-   * Retrieves ISOCountry based on numeric code.
-   * https://www.iso.org/obp/ui/#search
-   *
-   * @param numericCode Numeric code, ie. 840, 826
-   * @return ISOCountry
-   */
-  def apply(numericCode: Int): ISOCountry =
-    ISOCountry.values.find(numericCode == _.numericalCode) match {
-      case Some(country) ⇒ country
-      case _             ⇒ throw new ParseException(s"Invalid numeric code '$numericCode' for ISOCountry")
+  def from(countryCode: String): String =
+    ISOCountry.values.find(countryCode == _.toString) match {
+      case Some(isocountry) => isocountry.englishName
+      case _ => "InvalidCountryCode"
     }
 
-  /**
-   * Retrieves Option[ISOCountry] based on numeric code.
-   * https://www.iso.org/obp/ui/#search
-   *
-   * @param numericCode Numeric code, ie. 840, 826
-   * @return Option[ISOCountry]
-   */
-  def from(numericCode: Int): Option[ISOCountry] =
-    ISOCountry.values.find(numericCode == _.numericalCode)
 
 }

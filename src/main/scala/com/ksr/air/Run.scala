@@ -3,6 +3,8 @@ package com.ksr.air
 import java.time.LocalDate
 
 import com.ksr.air.conf.AppConfig
+import com.ksr.air.utils.ISOCountry
+import org.apache.avro.generic.GenericData.StringType
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DecimalType, IntegerType}
@@ -63,13 +65,17 @@ object Run {
 
   def aggregateTransformations(openAQDF: DataFrame, minYearlyReadings: Int = 4)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
     val yearly_agg = yearlyAvg(openAQDF)
-    val montly_agg = monthlyAvg(openAQDF, minYearlyReadings)
+    val monthly_agg = monthlyAvg(openAQDF, minYearlyReadings)
+    import org.apache.spark.sql.functions.{col, udf}
     yearly_agg.show()
-    montly_agg.show()
-    val agg = yearly_agg.join(montly_agg, Seq("year", "city"), "left")
-    agg.printSchema()
-    agg.select("year", "country", "city", "yearly_avg", "Jan", "Feb", "March", "April", "May",
-      "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec", "coordinates.latitude", "coordinates.longitude")
+    monthly_agg.show()
+    val isoConversion = udf((code: String) => ISOCountry.from(code))
+
+    val agg = yearly_agg.join(monthly_agg, Seq("year", "city"), "left")
+    agg.withColumnRenamed("country", "country_code")
+      .withColumn("country", isoConversion(col("country_code")))
+      .select("year", "country_code", "city", "yearly_avg", "Jan", "Feb", "March", "April", "May",
+      "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec", "country", "coordinates.latitude", "coordinates.longitude")
   }
 
   def yearlyAvg(in: DataFrame): DataFrame = {
