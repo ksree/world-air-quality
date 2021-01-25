@@ -2,6 +2,8 @@ package com.ksr.air
 
 import java.time.LocalDate
 
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.ksr.air.conf.AppConfig
 import com.ksr.air.utils.ISOCountry
 import org.apache.avro.generic.GenericData.StringType
@@ -37,9 +39,18 @@ object Run {
   def readOpenAQData(startDate: String, endDate: String)(implicit spark: SparkSession, appConf: AppConfig): DataFrame = {
     var start: LocalDate = LocalDate.parse(startDate)
     val end: LocalDate = LocalDate.parse(endDate)
+    val creds: BasicAWSCredentials = new BasicAWSCredentials(appConf.awsKey, appConf.awsSecret);
+    val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard()
+      .withCredentials(new AWSStaticCredentialsProvider(creds))
+      .withRegion("us-east-1").build();
+
+
     val paths = new ListBuffer[String]
     while (start.isBefore(end) || start.isEqual(end)) {
-      paths += s"${appConf.awsBucket}/${start.toString}"
+      val keyCount = s3Client.listObjectsV2(s"${appConf.awsBucketName}", s"${appConf.awsBucketPrefix}/${start.toString}").getKeyCount
+      if(keyCount > 0) {
+        paths += s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${start.toString}"
+      }
       start = start.plusMonths(1)
     }
     for (path <- paths) {
@@ -67,8 +78,6 @@ object Run {
     val yearly_agg = yearlyAvg(openAQDF)
     val monthly_agg = monthlyAvg(openAQDF, minYearlyReadings)
     import org.apache.spark.sql.functions.{col, udf}
-    yearly_agg.show()
-    monthly_agg.show()
     val isoConversion = udf((code: String) => ISOCountry.from(code))
 
     val agg = yearly_agg.join(monthly_agg, Seq("year", "city"), "left")
@@ -109,7 +118,7 @@ object Run {
       .mode(SaveMode.Append)
       .option("temporaryGcsBucket", appConf.tempGCSBucket)
       .option("partitionField", "partitionDate")
-      .option("clusteredFields", "country")
+      .option("clusteredFields", "country_code")
       .option("allowFieldAddition", "true") //Adds the ALLOW_FIELD_ADDITION SchemaUpdateOption
       .save(tableName)
   }

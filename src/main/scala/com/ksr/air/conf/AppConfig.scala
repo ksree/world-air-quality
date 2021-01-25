@@ -6,7 +6,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 case class AppConfig(awsKey: String,
                      awsSecret: String,
-                     awsBucket: String,
+                     awsBucketName: String,
+                     awsBucketPrefix: String,
                      tempGCSBucket: String,
                      bigQueryTableName: String,
                      startDate: String,
@@ -23,7 +24,8 @@ object AppConfig {
 
     AppConfig(conf.getString("AWS_ACCESS_KEY"),
       conf.getString("AWS_SECRET_KEY"),
-      conf.getString("AWS_BUCKET"),
+      conf.getString("AWS_BUCKET_NAME"),
+      conf.getString("AWS_BUCKET_PREFIX"),
       conf.getString("GCS_TEMPORARY_BUCKET"),
       conf.getString("BIGQUERY_TABLE_NAME"),
       conf.getString("startDate"),
