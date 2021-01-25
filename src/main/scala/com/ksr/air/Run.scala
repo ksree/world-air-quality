@@ -6,7 +6,6 @@ import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.ksr.air.conf.AppConfig
 import com.ksr.air.utils.ISOCountry
-import org.apache.avro.generic.GenericData.StringType
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DecimalType, IntegerType}
@@ -48,7 +47,7 @@ object Run {
     val paths = new ListBuffer[String]
     while (start.isBefore(end) || start.isEqual(end)) {
       val keyCount = s3Client.listObjectsV2(s"${appConf.awsBucketName}", s"${appConf.awsBucketPrefix}/${start.toString}").getKeyCount
-      if(keyCount > 0) {
+      if (keyCount > 0) {
         paths += s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${start.toString}"
       }
       start = start.plusMonths(1)
@@ -84,7 +83,7 @@ object Run {
     agg.withColumnRenamed("country", "country_code")
       .withColumn("country", isoConversion(col("country_code")))
       .select("year", "country_code", "city", "yearly_avg", "Jan", "Feb", "March", "April", "May",
-      "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec", "country", "coordinates.latitude", "coordinates.longitude")
+        "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec", "country", "coordinates.latitude", "coordinates.longitude")
   }
 
   def yearlyAvg(in: DataFrame): DataFrame = {
@@ -111,7 +110,8 @@ object Run {
   }
 
   def writeToBigQuery(out: DataFrame, tableName: String)(implicit spark: SparkSession, appConf: AppConfig): Unit = {
-    val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-"))))
+    val pOut = out.withColumn("partitionDate", to_date(concat(col("year"), lit("-01"),
+      lit("-01")), "yyyy-MM-dd"))
     pOut.write
       .format("bigquery")
       .mode(SaveMode.Append)
