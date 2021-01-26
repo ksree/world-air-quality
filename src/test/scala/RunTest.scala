@@ -44,20 +44,26 @@ class RunTest extends AnyFlatSpec {
   "Monthly Average" should "calculate monthly averages for each mponth of the year for every city" in {
     openAQData.show(100)
     val monthlyAvg: DataFrame = com.ksr.air.Run.monthlyAvg(openAQData, 1)
-    monthlyAvg.show()
-    val monthly_avg_Albuquerque: List[java.math.BigDecimal] = monthlyAvg
+    val monthly_avg_saoPaulo: List[java.math.BigDecimal] = monthlyAvg
       .select("Sept").filter(col("city") === "São Paulo").collect.map(_.getDecimal(0)).toList
-    assert(monthly_avg_Albuquerque.head.compareTo(new java.math.BigDecimal(3).setScale(2, RoundingMode.DOWN)) === 0)
+    assert(monthly_avg_saoPaulo.head.compareTo(new java.math.BigDecimal(41.00).setScale(2, RoundingMode.DOWN)) === 0)
   }
 
   "Yearly Average" should "calculate yearly averages for each year for every city" in {
     val yearlyAvg: DataFrame = com.ksr.air.Run.yearlyAvg(openAQData)
     yearlyAvg.show()
+    val yearlyAvgHyd = yearlyAvg.select("yearly_avg").filter(col("city") === "Hyderabad").collect.map(_.getDecimal(0)).toList
+    assert(yearlyAvgHyd.head.compareTo(new java.math.BigDecimal(66.00).setScale(2, RoundingMode.DOWN)) === 0)
+
   }
 
   "Aggregate transformations " should "calculate all aggregations in openair aq" in {
     val aggregateOpenAirAQ: DataFrame = com.ksr.air.Run.aggregateTransformations(openAQData, 1)
-    aggregateOpenAirAQ.show()
+    val yearlyAvgHyd = aggregateOpenAirAQ.select("yearly_avg").filter(col("city") === "Hyderabad").collect.map(_.getDecimal(0)).toList
+    val monthly_avg_saoPaulo: List[java.math.BigDecimal] = aggregateOpenAirAQ
+      .select("Sept").filter(col("city") === "São Paulo").collect.map(_.getDecimal(0)).toList
+    assert(monthly_avg_saoPaulo.head.compareTo(new java.math.BigDecimal(41.00).setScale(2, RoundingMode.DOWN)) === 0)
+    assert(yearlyAvgHyd.head.compareTo(new java.math.BigDecimal(66.00).setScale(2, RoundingMode.DOWN)) === 0)
   }
 
   "Check if exist" should "return false if path exists" in {
