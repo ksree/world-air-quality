@@ -79,7 +79,7 @@ object Run {
     import org.apache.spark.sql.functions.{col, udf}
     val isoConversion = udf((code: String) => ISOCountry.from(code))
 
-    val agg = yearly_agg.join(monthly_agg, Seq("year", "city"), "left")
+    val agg = yearly_agg.join(monthly_agg, Seq("year", "city"), "right")
     agg.withColumnRenamed("country", "country_code")
       .withColumn("country", isoConversion(col("country_code")))
       .select("year", "country_code", "city", "yearly_avg", "Jan", "Feb", "March", "April", "May",

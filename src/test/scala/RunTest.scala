@@ -22,12 +22,9 @@ class RunTest extends AnyFlatSpec {
     .config("spark.hadoop.fs.s3a.secret.key", appConf.awsSecret)
     .getOrCreate();
 
-  //  val testSource = s"${appConf.awsBucket}/${appConf.startDate}/1506558318.ndjson"
   val testSource = new ListBuffer[String]
-  /*  testSource += (s"${appConf.awsBucket}/${appConf.startDate}/1506558318.ndjson")
-    testSource += (s"${appConf.awsBucket}/${appConf.startDate}/1506558901.ndjson")*/
-  testSource += (s"${appConf.awsBucketPrefix}/2016-11-28/")
-  //testSource += (s"${appConf.awsBucket}/2019-03-01/")
+    testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558318.ndjson.gz")
+    testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558901.ndjson.gz")
 
   val openAQData: DataFrame = spark.read.format("json")
     .option("inferSchema", "true")
@@ -41,16 +38,16 @@ class RunTest extends AnyFlatSpec {
     .filter(col("value") > 0 && col("value") != 985 && col("parameter").contains("pm25"))
 
   "Read openaq s3 " should "return openair aq records" in {
-    assert(openAQData.count() == 25557)
+    assert(openAQData.count() == 395)
   }
-  openAQData.createOrReplaceTempView("openaq")
 
   "Monthly Average" should "calculate monthly averages for each mponth of the year for every city" in {
+    openAQData.show(100)
     val monthlyAvg: DataFrame = com.ksr.air.Run.monthlyAvg(openAQData, 1)
     monthlyAvg.show()
     val monthly_avg_Albuquerque: List[java.math.BigDecimal] = monthlyAvg
-      .select("Nov").filter(col("city") === "Albuquerque").collect.map(_.getDecimal(0)).toList
-    assert(monthly_avg_Albuquerque.head.compareTo(new java.math.BigDecimal(3.87).setScale(2, RoundingMode.DOWN)) === 0)
+      .select("Sept").filter(col("city") === "São Paulo").collect.map(_.getDecimal(0)).toList
+    assert(monthly_avg_Albuquerque.head.compareTo(new java.math.BigDecimal(3).setScale(2, RoundingMode.DOWN)) === 0)
   }
 
   "Yearly Average" should "calculate yearly averages for each year for every city" in {
