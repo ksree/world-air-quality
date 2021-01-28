@@ -9,6 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 import scala.collection.mutable.ListBuffer
+import scala.io.Source
 import scala.math.BigDecimal.RoundingMode
 
 class RunTest extends AnyFlatSpec {
@@ -23,8 +24,8 @@ class RunTest extends AnyFlatSpec {
     .getOrCreate();
 
   val testSource = new ListBuffer[String]
-  testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558318.ndjson.gz")
-  testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558901.ndjson.gz")
+  testSource += getClass.getResource(s"${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558318.ndjson.gz").getPath
+  testSource += getClass.getResource(s"${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558901.ndjson.gz").getPath
 
   val openAQData: DataFrame = spark.read.format("json")
     .option("inferSchema", "true")
