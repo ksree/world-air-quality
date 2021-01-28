@@ -1,5 +1,5 @@
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing, S3ObjectSummary}
+import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.ksr.air.conf.AppConfig
 import org.apache.spark.sql.functions._
@@ -23,8 +23,8 @@ class RunTest extends AnyFlatSpec {
     .getOrCreate();
 
   val testSource = new ListBuffer[String]
-    testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558318.ndjson.gz")
-    testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558901.ndjson.gz")
+  testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558318.ndjson.gz")
+  testSource += (s"s3a://${appConf.awsBucketName}/${appConf.awsBucketPrefix}/${appConf.startDate}/1506558901.ndjson.gz")
 
   val openAQData: DataFrame = spark.read.format("json")
     .option("inferSchema", "true")
@@ -80,7 +80,7 @@ class RunTest extends AnyFlatSpec {
     val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest()
       .withBucketName(bucketName))
 
-    objectListing.getObjectSummaries.toList.foreach{n => println(n.getKey)}
+    objectListing.getObjectSummaries.toList.foreach { n => println(n.getKey) }
 
   }
 }

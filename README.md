@@ -4,6 +4,9 @@
 A project to read and aggregate world air quality data
 Build and package code
 
+
+https://github.com/openaq/openaq-averaging/blob/master/README.md for more info
+
 ```text
 cd $HOME/world-air-aq/
 mvn package -DskipTests
@@ -29,7 +32,7 @@ bq --location=$GCP_REGION mk \
 export GCP_REGION=us-east1
 
 gcloud dataproc jobs submit spark \
---cluster=cluster-c975  \
+--cluster=cluster-3e8d  \
 --region=$GCP_REGION \
 --class=com.ksr.air.Run \
 --files=/home/kapilsreed12/application.conf \
