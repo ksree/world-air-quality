@@ -36,11 +36,13 @@ mvn package -DskipTests
 echo 'Generating spark application config'
 
  echo "AWS_ACCESS_KEY="\""${AWS_ACCESS_KEY}"\""
- AWS_SECRET_KEY="\""${AWS_SECRET_KEY}"\""
- AWS_BUCKET="\"s3a://noaa-ghcn-pds/csv/"\"
- GCS_TEMPORARY_BUCKET="\""${GCS_TEMPORARY_BUCKET}"\""
- BIGQUERY_TABLE_NAME="\""${PROJECT_ID}:GlobalHistoricalWeatherData.ghcn_daily"\""
- startYear=1764
- endYear=2020" > $HOME/application.conf
+AWS_SECRET_KEY="\""${AWS_SECRET_KEY}"\""
+AWS_BUCKET_NAME=openaq-fetches
+AWS_BUCKET_PREFIX=realtime-gzipped
+GCS_TEMPORARY_BUCKET="\""${GCS_TEMPORARY_BUCKET}"\""
+BIGQUERY_TABLE_NAME="\""${PROJECT_ID}:OpenAQ.pm25_global"\""
+startDate=2019-01-01
+endDate=2019-12-31
+applyAggregations=true" > $HOME/application.conf
 
- echo "Created a new configuration file $HOME/application.conf"
+echo "Created a new configuration file $HOME/application.conf"
