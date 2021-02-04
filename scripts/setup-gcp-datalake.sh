@@ -54,7 +54,7 @@ export GCS_TEMPORARY_BUCKET="${PROJECT_ID}-temp-bucket"
 echo " Creating GCS temporary bucket $GCS_TEMPORARY_BUCKET with storage class $STORAGE_CLASS and location $LOCATION"
 gsutil mb -c $STORAGE_CLASS -l $GCP_REGION  gs://$GCS_TEMPORARY_BUCKET
 
-echo "Creating Bigquery dataset ${PROJECT_ID}:GlobalHistoricalWeatherData"
+echo "Creating Bigquery dataset ${PROJECT_ID}:OpenAQ"
 bq --location=$LOCATION mk \
 	--dataset \
 	--description 'OpenAQ weather dataset' \
