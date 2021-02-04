@@ -30,7 +30,7 @@ fi
 export PROJECT_ID=$(gcloud config get-value project)
 export GCS_TEMPORARY_BUCKET="${PROJECT_ID}-temp-bucket"
 
-cd $HOME/ghcn-daily-analysis/
+cd $HOME/world-air-quality/
 mvn package -DskipTests
 
 echo 'Generating spark application config'
