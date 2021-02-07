@@ -32,8 +32,8 @@ WS_ACCESS_KEY="Add Your Key here"
 AWS_SECRET_KEY="Your Secret "
 AWS_BUCKET_NAME="openaq-fetches"
 AWS_BUCKET_PREFIX="realtime-gzipped"
-GCS_TEMPORARY_BUCKET="kapilsreed12-1dataflow-openairaq-temp-bucket"
-BIGQUERY_TABLE_NAME="kapilsreed12-1dataflow:OpenAirAQ.pm25_global"
+GCS_TEMPORARY_BUCKET="your-gcs-temp-bucket"
+BIGQUERY_TABLE_NAME="yourprojectname:OpenAirAQ.pm25_global"
 startDate="2019-01-01"   -- Start Date OpenAQ dataset
 endDate="2019-12-31"      -- End Date OpenAQ dataset
 applyAggregations="true"  -- true= applies pm2.5 aggreagation, false= loads openaq data as is into BigQuery. 
