@@ -10,8 +10,7 @@ Build and package code
 cd $HOME/world-air-aq/
 mvn package -DskipTests
 ```
-
-##Create BigQuery Dataset and temporary GCS for intermidate storage
+### Create BigQuery Dataset and temporary GCS for intermidate storage
 ```shell script
 export PROJECT_ID="kapilsreed12-1dataflow"
 export GCS_TEMPORARY_BUCKET="${PROJECT_ID}-openairaq-temp-bucket"
