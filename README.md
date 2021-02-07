@@ -10,7 +10,7 @@ Build and package code
 cd $HOME/world-air-aq/
 mvn package -DskipTests
 ```
-### Create BigQuery Dataset and temporary GCS for intermidate storage
+## Create BigQuery Dataset and temporary GCS for intermidate storage
 ```shell script
 export PROJECT_ID="kapilsreed12-1dataflow"
 export GCS_TEMPORARY_BUCKET="${PROJECT_ID}-openairaq-temp-bucket"
@@ -25,7 +25,18 @@ bq --location=$GCP_REGION mk \
  "${PROJECT_ID}:OpenAirAQ"
 ```
 
-##Execute Dataproc job 
+## application.conf
+WS_ACCESS_KEY="Add Your Key here"
+AWS_SECRET_KEY="Your Secret "
+AWS_BUCKET_NAME="openaq-fetches"
+AWS_BUCKET_PREFIX="realtime-gzipped"
+GCS_TEMPORARY_BUCKET="kapilsreed12-1dataflow-openairaq-temp-bucket"
+BIGQUERY_TABLE_NAME="kapilsreed12-1dataflow:OpenAirAQ.pm25_global"
+startDate="2019-01-01"   -- Start Date OpenAQ dataset
+endDate="2019-12-31"      -- End Date OpenAQ dataset
+applyAggregations="true"  -- true= applies pm2.5 aggreagation, false= loads openaq data as is into BigQuery. 
+
+## Execute Dataproc job 
 ```
 export GCP_REGION=us-east1
 
