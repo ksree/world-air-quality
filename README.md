@@ -26,6 +26,8 @@ bq --location=$GCP_REGION mk \
 ```
 
 ## application.conf
+```shell script
+
 WS_ACCESS_KEY="Add Your Key here"
 AWS_SECRET_KEY="Your Secret "
 AWS_BUCKET_NAME="openaq-fetches"
@@ -35,6 +37,7 @@ BIGQUERY_TABLE_NAME="kapilsreed12-1dataflow:OpenAirAQ.pm25_global"
 startDate="2019-01-01"   -- Start Date OpenAQ dataset
 endDate="2019-12-31"      -- End Date OpenAQ dataset
 applyAggregations="true"  -- true= applies pm2.5 aggreagation, false= loads openaq data as is into BigQuery. 
+```
 
 ## Execute Dataproc job 
 ```
