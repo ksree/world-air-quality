@@ -52,7 +52,7 @@ gcloud dataproc jobs submit spark \
 -- application.conf
 ```
 
-To perform aggregations in BigQuery(rather than Spark), set applyAggregations= false in application config. 
+## To perform aggregations in BigQuery(rather than Spark), set applyAggregations= false in application config. 
 SQL to perform monthly and yearly aggreagation on BigQuery:
 ``` jql
 
