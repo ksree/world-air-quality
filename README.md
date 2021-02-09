@@ -55,7 +55,12 @@ gcloud dataproc jobs submit spark \
 To perform aggregations in BigQuery(rather than Spark), set applyAggregations= false in application config. 
 SQL to perform monthly and yearly aggreagation on BigQuery:
 ``` jql
+
+ -- Calculate Monthly Average, with pivoting
+ WITH
+  MonthlyAVG AS(
 SELECT  city, 
+  year,
   MAX(IF(month = 1, monthly_avg, NULL)) AS `JAN`,
   MAX(IF(month = 2, monthly_avg, NULL)) AS `FEB`,
   MAX(IF(month = 3, monthly_avg, NULL)) AS `MARCH`,
@@ -69,27 +74,55 @@ SELECT  city,
   MAX(IF(month = 11, monthly_avg, NULL)) AS `NOV`,
   MAX(IF(month = 12, monthly_avg, NULL)) AS `DEC`
   FROM (
-    SELECT  city, month, avg(value) as monthly_avg  FROM `kapilsreed12-1dataflow.OpenAirAQ.pm25_global_og`
-    WHERE city = "Mumbai"
+    SELECT  city, month, year,
+    COUNT(*) OVER(PARTITION BY city, year) as no_readings_per_yr,
+    TRUNC(AVG(value),2)  as monthly_avg  FROM `kapilsreed12-1dataflow.OpenAirAQ.pm25_global_og`
     GROUP BY city, month, year
     ORDER BY city, month, year
+  ) WHERE no_readings_per_yr > 4
+  GROUP BY city, year
   )
-  GROUP BY city;
 
-
-SELECT 
+  --Calculate yearly avg
+  SELECT
+    YearlyAVG.city,
+    YearlyAVG.parameter,	
+    YearlyAVG.latitude,	
+    YearlyAVG.longitude,	
+    YearlyAVG.country,	
+    YearlyAVG.unit,	
+    YearlyAVG.year,	
+    YearlyAVG.yearly_avg,
+    MonthlyAVG.JAN,
+    MonthlyAVG.FEB,
+    MonthlyAVG.MARCH,
+    MonthlyAVG.APRIL,
+    MonthlyAVG.MAY,
+    MonthlyAVG.JUNE,
+    MonthlyAVG.JULY,
+    MonthlyAVG.AUGUST,
+    MonthlyAVG.SEPT,
+    MonthlyAVG.OCT,
+    MonthlyAVG.NOV,
+    MonthlyAVG.DEC
+  FROM ( SELECT * FROM (
+    SELECT
       city,
-      parameter, 
-      coordinates.latitude AS latitude ,
+      parameter,
+      coordinates.latitude AS latitude,
       coordinates.longitude AS longitude,
       country,
-      sourceName, 
+      sourceName,
       sourceType,
       unit,
       month,
-      year, 
-      AVG(value) OVER(PARTITION BY city, year) AS yearly_avg,
-      ROW_NUMBER() OVER(PARTITION BY city, month, year ORDER BY city, month, year) AS row_no 
-      FROM `kapilsreed12-1dataflow.OpenAirAQ.pm25_global_og`
-      WHERE city = "Delhi"
+      year,
+      TRUNC(AVG(value) OVER(PARTITION BY year, city) , 2) AS yearly_avg,
+      ROW_NUMBER() OVER(PARTITION BY year, city) AS row_no
+    FROM
+      `kapilsreed12-1dataflow.OpenAirAQ.pm25_global_og` ) WHERE row_no = 1) AS YearlyAVG
+  RIGHT JOIN MonthlyAVG 
+  ON YearlyAVG.city = MonthlyAVG.city 
+  AND YearlyAVG.year = MonthlyAVG.year
+  ORDER BY year, YearlyAVG.yearly_avg DESC;
 ```
